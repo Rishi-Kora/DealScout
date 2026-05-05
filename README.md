@@ -10,35 +10,28 @@ DealScout takes a used-car listing URL, runs it through a pipeline of five speci
 
 A **Coordinator** agent receives the listing URL and dispatches four specialists in parallel. Their findings are written to a shared **Scratchpad**. The Coordinator synthesises a **Verdict**, which a **Critic** agent reviews and may send back for revision (up to 2 rounds). Every event is written to a **trace log** in JSONL for full observability.
 
-```
-User Input (listing URL)
-        │
-        ▼
-   Coordinator  ──────────────────────────────────────────┐
-        │                                                  │
-        ├──► Listing Analyst   → FactSheet                 │
-        │                                                  │
-        ├──► Visual Inspector  → VisualInspectionReport    │
-        │         (parallel)                               │
-        ├──► Price Auditor     → PriceAuditReport          │
-        │                                                  │
-        └──► History Checker   → HistoryReport             │
-                  │  (ReAct loop: rc_lookup,               │
-                  │   insurance_status, challan_check,     │
-                  │   accident_lookup_hint)                 │
-                                                           │
-                  All findings → Scratchpad                │
-                                    │                      │
-                                    ▼                      │
-                              Coordinator                  │
-                           synthesises Verdict ◄───────────┘
-                                    │
-                                    ▼
-                               Critic Agent
-                            (approve / revise)
-                                    │
-                                    ▼
-                           Final Verdict + Reports
+```mermaid
+flowchart TD
+    A([🧑 User Input\nListing URL]) --> B
+
+    B[[🧭 Coordinator]] --> C & D & E & F
+
+    subgraph Specialists [Specialists — run in parallel]
+        C[📋 Listing Analyst\n─────────────\nFactSheet]
+        D[📸 Visual Inspector\n─────────────\nVisualInspectionReport]
+        E[💰 Price Auditor\n─────────────\nPriceAuditReport]
+        F[📜 History Checker\n─────────────\nHistoryReport\n\nReAct loop:\nrc_lookup · insurance_status\nchallan_check · accident_lookup_hint]
+    end
+
+    C & D & E & F --> G[(🗒️ Scratchpad\nShared findings)]
+
+    G --> H[[🧭 Coordinator\nSynthesises Verdict]]
+    B -.->|context| H
+
+    H --> I{✏️ Critic\nApprove / Revise?}
+
+    I -->|Revise — up to 2 rounds| H
+    I -->|Approved| J([✅ Final Verdict\n+ All Reports])
 ```
 
 ---
@@ -115,7 +108,7 @@ dealscout/
 ### Install
 
 ```bash
-git clone [https://github.com/your-org/dealscout.git](https://github.com/Rishi-Kora/DealScout.git)
+git clone https://github.com/your-org/dealscout.git
 cd dealscout
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
