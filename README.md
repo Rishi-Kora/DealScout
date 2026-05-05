@@ -115,7 +115,7 @@ dealscout/
 ### Install
 
 ```bash
-git clone https://github.com/your-org/dealscout.git
+git clone [https://github.com/your-org/dealscout.git](https://github.com/Rishi-Kora/DealScout.git)
 cd dealscout
 python -m venv .venv
 source .venv/bin/activate        # Windows: .venv\Scripts\activate
